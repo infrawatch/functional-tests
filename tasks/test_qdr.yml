@@ -1,5 +1,12 @@
 ---
+- name: Set command_prefix
+  set_fact:
+    command_prefix: "{{ container_bin }} exec {{ collectd_container_name }}"
+  when:
+    - use_container
+
 - name: "[Test] Check that qdr container is running."
+  when: use_container
   shell: |
     {{ container_bin }} ps | grep {{ qdr_container_name }}
   register: container_nodes
@@ -7,7 +14,7 @@
 
 - name: "[Setup] Get Qdr bus address"
   shell: |
-      {{ container_bin }} exec {{ qdr_container_name }} cat /etc/qpid-dispatch/qdrouterd.conf | grep -C 5 listener | grep -C 3 "port: 5666" | grep host | awk '{print $2}'
+      {{  command_prefix }} cat /etc/qpid-dispatch/qdrouterd.conf | grep -C 5 listener | grep -C 3 "port: 5666" | grep host | awk '{print $2}'
   register: bus_addr
 
 - name: "[Debug] Get Qdr bus address"
@@ -16,7 +23,7 @@
 
 - name: "[Test] Get number of messages received"
   shell: |
-    {{ container_bin }} exec {{ qdr_container_name }} qdstat -b {{ bus_addr.stdout }}:5666 -g | grep "Ingress Count" | awk '{print $3}'
+    {{ command_prefix }} qdstat -b {{ bus_addr.stdout }}:5666 -g | grep "Ingress Count" | awk '{print $3}'
   register: num_rx
   failed_when: num_rx.stdout|int == 0 or num_rx.stdout_lines|length == 0
 

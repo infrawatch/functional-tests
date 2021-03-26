@@ -44,7 +44,7 @@ The callback will only report on the status of tasks that have a name beginning 
     Alternatively, you can create your own playbook that imports the tasks in ``tasks/*.yml``
 
 If you would like to run openstack post install tasks playbbok,you can run the following command::
-    
+
     ansible-playbbok -i `infrared workspace inventory` openstack_tasks.yml
 Adding new tests
 ----------------
@@ -99,3 +99,11 @@ The following vars can be passed to change the behaviour.
   The name of the container where qdr is running, e.g. ``metrics_qdr``, ``qdr-test``
 
   default: ``metrics_qdr``
+
+* **use_container**
+
+  Run tests in a container.
+  Set to ``false`` to run the tests on localhost, rather than in a container
+
+  default: true
+

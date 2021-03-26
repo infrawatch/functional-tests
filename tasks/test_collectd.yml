@@ -1,5 +1,12 @@
 ---
+- name: Set command_prefix
+  set_fact:
+    command_prefix: "{{ container_bin }} exec {{ collectd_container_name }}"
+  when:
+    - use_container
+
 - name: "[Test] Check that collectd container is running."
+  when: use_container
   shell: |
     {{ container_bin }} ps | grep {{ collectd_container_name }}
   register: container_nodes
@@ -7,7 +14,7 @@
 
 - name: "[Test] Check for a non-zero number of metrics from collectd"
   command: |
-    {{ container_bin }} exec {{ collectd_container_name }} collectdctl -s /var/run/collectd-socket listval
+    {{ command_prefix }} collectdctl -s /var/run/collectd-socket listval
   register: metrics
   failed_when: "metrics.stdout_lines|length == 0"
 
@@ -21,6 +28,6 @@
 
 - name: "[Test] Get the value of some metric from collectd"
   command: |
-    {{ container_bin }} exec {{ collectd_container_name }} collectdctl -s /var/run/collectd-socket getval {{ metrics.stdout_lines[-1] }}
+    {{ command_prefix }} collectdctl -s /var/run/collectd-socket getval {{ metrics.stdout_lines[-1] }}
   register: stat
   failed_when: stat.stdout_lines|length == 0
